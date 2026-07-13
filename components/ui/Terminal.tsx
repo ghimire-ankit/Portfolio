@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { skills } from "@/lib/data";
 
 type Line = { type: "cmd" | "output" | "blank"; text: string };
 
@@ -22,15 +21,16 @@ const SESSIONS: Line[][] = [
 ];
 
 const PROMPT = "~ system / explorer $";
-const TYPING_SPEED = 35; // ms per char
-const LINE_DELAY = 220;  // ms between lines
+const TYPING_SPEED = 20; // ms per char (snappier experience)
+const LINE_DELAY = 120;  // ms between lines
 
 export default function Terminal() {
     const [visibleLines, setVisibleLines] = useState<Line[]>([]);
     const [currentTyping, setCurrentTyping] = useState("");
     const [cursorVisible, setCursorVisible] = useState(true);
-    const endRef = useRef<HTMLDivElement>(null);
+    const bodyRef = useRef<HTMLDivElement>(null);
 
+    // Auto typing sequence
     useEffect(() => {
         const lines = SESSIONS[0];
         let cancelled = false;
@@ -64,8 +64,12 @@ export default function Terminal() {
         return () => { cancelled = true; clearInterval(blink); };
     }, []);
 
+    // Scroll only the terminal box inner window (prevents main page jitter)
     useEffect(() => {
-        endRef.current?.scrollIntoView({ behavior: "smooth" });
+        const container = bodyRef.current;
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
     }, [visibleLines, currentTyping]);
 
     return (
@@ -86,25 +90,30 @@ export default function Terminal() {
                 <div className="w-14" />
             </div>
 
-            <div className="terminal-body" style={{ maxHeight: "280px", overflowY: "auto" }}>
+            {/* Stable fixed height container: h-[310px] on mobile to fit wrapped text, h-[256px] on desktop */}
+            <div
+                ref={bodyRef}
+                className="terminal-body h-[310px] sm:h-[256px] overflow-y-auto"
+                style={{ scrollbarWidth: "thin" }}
+            >
                 {visibleLines.map((line, i) => (
                     <div key={i} className="leading-relaxed">
                         {line.type === "cmd" ? (
-                            <p className="font-mono text-[11px] mb-1">
+                            <p className="font-mono text-[11px] mb-1 animate-fadeIn">
                                 <span className="text-[var(--accent)] mr-2">{PROMPT}</span>
                                 <span className="text-[var(--term-cmd)]">{line.text}</span>
                             </p>
                         ) : line.type === "output" ? (
-                            <p className="font-mono text-[11px] text-[var(--term-output)] ml-0 mb-1 leading-snug">
+                            <p className="font-mono text-[11px] text-[var(--term-output)] ml-0 mb-1 leading-snug animate-fadeIn">
                                 {line.text}
                             </p>
                         ) : (
-                            <div className="h-2" />
+                            <div className="h-2 animate-fadeIn" />
                         )}
                     </div>
                 ))}
 
-                {currentTyping !== null && (
+                {currentTyping !== "" && (
                     <p className="font-mono text-[11px] leading-relaxed mb-1">
                         <span className="text-[var(--accent)] mr-2">{PROMPT}</span>
                         <span className="text-[var(--term-cmd)]">{currentTyping}</span>
@@ -114,7 +123,6 @@ export default function Terminal() {
                         />
                     </p>
                 )}
-                <div ref={endRef} />
             </div>
         </motion.div>
     );
