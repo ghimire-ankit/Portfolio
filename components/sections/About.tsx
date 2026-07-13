@@ -1,64 +1,9 @@
 "use client";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { personal } from "@/lib/data";
 import Terminal from "@/components/ui/Terminal";
-import { MouseEvent } from "react";
+import PixelPhotoFrame from "@/components/ui/PixelPhotoFrame";
 
-function PhotoFrame() {
-    // 3D tilt effect variables
-    const x = useMotionValue(0);
-    const y = useMotionValue(0);
-
-    const rotateX = useTransform(y, [-100, 100], [15, -15]);
-    const rotateY = useTransform(x, [-100, 100], [-15, 15]);
-
-    const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-
-        x.set(e.clientX - centerX);
-        y.set(e.clientY - centerY);
-    };
-
-    const handleMouseLeave = () => {
-        x.set(0);
-        y.set(0);
-    };
-
-    return (
-        <motion.div
-            className="photo-frame-3d perspective-1000 relative"
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            style={{ rotateX, rotateY, z: 100 }}
-            animate={{ scale: 1 }}
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        >
-            <div style={{ height: "340px", width: "270px" }} className="relative overflow-hidden group">
-                {/* Vintage overlay effect on hover */}
-                <div className="absolute inset-0 bg-[var(--accent)] opacity-0 group-hover:opacity-20 mix-blend-color-burn transition-opacity duration-500 z-10 pointer-events-none" />
-
-                {/* Geometric scanline overlay on hover */}
-                <div className="absolute inset-0 translate-y-[100%] group-hover:translate-y-[-100%] transition-transform duration-[1.5s] ease-in-out bg-gradient-to-b from-transparent via-[rgba(191,155,74,0.3)] to-transparent z-20 pointer-events-none" />
-
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                    src="/images/ankit.webp"
-                    alt="Ankit Ghimire"
-                    className="w-full h-full object-cover object-top filter grayscale group-hover:grayscale-0 transition-all duration-700"
-                />
-
-                {/* Border frame that expands on hover */}
-                <div className="absolute inset-0 border border-[var(--border)] group-hover:border-[var(--accent)] transition-colors duration-500 z-30 pointer-events-none" />
-            </div>
-
-            {/* Magnetic shadow */}
-            <div className="absolute -inset-4 bg-[var(--accent)] opacity-0 blur-2xl -z-10 group-hover:opacity-10 transition-opacity duration-500" />
-        </motion.div>
-    );
-}
 
 const fadeUp = {
     hidden: { opacity: 0, y: 32 },
@@ -127,13 +72,18 @@ export default function About() {
 
                 <motion.div
                     className="flex justify-center lg:block relative"
-                    initial={{ opacity: 0, y: 20, x: 0 }}
+                    initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-80px" }}
                     transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                    style={{ perspective: 1000 }}
                 >
-                    <PhotoFrame />
+                    <PixelPhotoFrame
+                        src1="/images/ankit.webp"
+                        src2="/images/ankit2webp.webp"
+                        width={270}
+                        height={340}
+                        alt="Ankit Ghimire"
+                    />
                 </motion.div>
             </div>
 
