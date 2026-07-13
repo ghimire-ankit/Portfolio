@@ -28,6 +28,17 @@ export default function Home() {
         }
     }, [loaded]);
 
+    // Disable right click (context menu) globally (matching abbasraza.dev behavior)
+    useEffect(() => {
+        const handleContextMenu = (e: any) => {
+            e.preventDefault();
+        };
+        document.addEventListener("contextmenu", handleContextMenu);
+        return () => {
+            document.removeEventListener("contextmenu", handleContextMenu);
+        };
+    }, []);
+
     return (
         <>
             {/* Preloader */}
