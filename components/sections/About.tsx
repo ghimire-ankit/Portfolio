@@ -126,9 +126,9 @@ export default function About() {
                 </div>
 
                 <motion.div
-                    className="hidden lg:block relative"
-                    initial={{ opacity: 0, x: 30 }}
-                    whileInView={{ opacity: 1, x: 0 }}
+                    className="flex justify-center lg:block relative"
+                    initial={{ opacity: 0, y: 20, x: 0 }}
+                    whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-80px" }}
                     transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                     style={{ perspective: 1000 }}
