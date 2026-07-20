@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useRef, useEffect, MouseEvent } from "react";
-import { motion, useSpring, useTransform } from "framer-motion";
+import React, { useState, useRef, useEffect, MouseEvent, TouchEvent } from "react";
+import { motion, useSpring } from "framer-motion";
 
 interface PixelPhotoFrameProps {
     src1: string;  // Base image (ankit.webp)
@@ -17,169 +17,145 @@ export default function PixelPhotoFrame({
     height = 340,
     alt = "Portrait",
 }: PixelPhotoFrameProps) {
-    const [hovering, setHovering] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const [hovering, setHovering] = useState(false);
 
-    // Spring physics configuration for luxurious Awwwards-style lag-free responsiveness
-    const springConfig = { damping: 25, stiffness: 220, mass: 0.6 };
-    const rotateX = useSpring(0, springConfig);
-    const rotateY = useSpring(0, springConfig);
+    // Dynamic slider center-point (0 to 100%)
+    const targetWipe = useSpring(0, { damping: 28, stiffness: 350 });
 
-    // Handle magnetic coordinate calculations
-    const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    const updateWipe = (clientX: number) => {
         const el = containerRef.current;
         if (!el) return;
-
         const rect = el.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
+        // Calculate X coordinate relative to container width (clamped between 0 and 1)
+        const relX = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        targetWipe.set(relX * 100);
+    };
 
-        // Calculate cursor offset percentage from center (-0.5 to 0.5)
-        const percentX = (e.clientX - centerX) / rect.width;
-        const percentY = (e.clientY - centerY) / rect.height;
+    const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+        updateWipe(e.clientX);
+    };
 
-        // Map to angle limits (max 18deg rotation)
-        rotateX.set(-percentY * 22);
-        rotateY.set(percentX * 22);
+    const handleTouchMove = (e: TouchEvent<HTMLDivElement>) => {
+        if (e.touches[0]) {
+            updateWipe(e.touches[0].clientX);
+        }
+    };
+
+    const handleMouseEnter = (e: MouseEvent<HTMLDivElement>) => {
+        setHovering(true);
+        updateWipe(e.clientX);
     };
 
     const handleMouseLeave = () => {
         setHovering(false);
-        rotateX.set(0);
-        rotateY.set(0);
+        // Animate slider back to default (0% - fully showing base image)
+        targetWipe.set(0);
     };
 
-    const handleTouchStart = () => {
-        // Toggle hover state on mobile devices
-        setHovering(prev => !prev);
-    };
+    // We keep track of the current spring value of targetWipe to animate style properties
+    const [wipeValue, setWipeValue] = useState(0);
+    useEffect(() => {
+        const unsubscribe = targetWipe.on("change", (latest) => {
+            setWipeValue(latest);
+        });
+        return () => unsubscribe();
+    }, [targetWipe]);
 
     return (
         <div
             ref={containerRef}
-            className="relative cursor-pointer select-none"
+            className="relative select-none overflow-hidden rounded-2xl border border-[var(--border)] transition-colors duration-500"
             style={{
                 width,
                 height,
-                perspective: "1200px" // Creates depth space for 3D translations
+                boxShadow: hovering
+                    ? "0 20px 40px rgba(0,0,0,0.6), 0 0 0 1px var(--accent)"
+                    : "0 10px 30px rgba(0,0,0,0.4)"
             }}
             onMouseMove={handleMouseMove}
-            onMouseEnter={() => setHovering(true)}
+            onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchStart={() => setHovering(true)}
+            onTouchEnd={handleMouseLeave}
         >
-            <motion.div
-                className="w-full h-full relative"
+            {/* ─── IMAGE 2: ALT VIEW (Always sits fully visible in background) ─── */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+                src={src2}
+                alt="Alternative Portrait view"
+                draggable={false}
+                className="absolute inset-0 w-full h-full object-cover object-top filter grayscale-0 transition-transform duration-700"
                 style={{
-                    rotateX,
-                    rotateY,
-                    transformStyle: "preserve-3d", // Required to allow children to exist in separate Z spaces
+                    transform: hovering ? "scale(1.03)" : "scale(1)"
                 }}
-            >
-                {/* ─── LAYER 1: BACK LAYER (ankit2webp.webp) ─── */}
-                <motion.div
-                    className="absolute inset-0 rounded-2xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border)]"
-                    style={{
-                        transformStyle: "preserve-3d",
-                        boxShadow: "0 10px 30px rgba(0,0,0,0.6)",
-                    }}
-                    animate={
-                        hovering
-                            ? { translateZ: -30, opacity: 0.9, filter: "grayscale(0%)" }
-                            : { translateZ: 0, opacity: 0, filter: "grayscale(100%)" }
-                    }
-                    transition={{ type: "spring", stiffness: 260, damping: 24 }}
-                >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src={src2}
-                        alt="Alternative view"
-                        draggable={false}
-                        className="w-full h-full object-cover object-top"
-                    />
-                </motion.div>
-
-                {/* ─── LAYER 2: MIDDLE HOLOGRAPHIC MESH LAYOUT (Interactive Grid & Scanning lines) ─── */}
-                <motion.div
-                    className="absolute inset-0 rounded-2xl border border-[var(--accent)]/50 pointer-events-none overflow-hidden"
-                    style={{
-                        backgroundImage: `
-                            radial-gradient(var(--accent) 1px, transparent 1.5px),
-                            linear-gradient(rgba(191, 155, 74, 0.03) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(191, 155, 74, 0.03) 1px, transparent 1px)
-                        `,
-                        backgroundSize: "16px 16px, 16px 16px, 16px 16px",
-                        backgroundColor: "rgba(13, 11, 9, 0.55)",
-                        backdropFilter: hovering ? "blur(2px)" : "blur(0px)",
-                        boxShadow: "0 0 40px rgba(191,155,74,0.15), inset 0 0 20px rgba(191,155,74,0.1)",
-                    }}
-                    animate={
-                        hovering
-                            ? { translateZ: 15, opacity: 0.85, scale: 0.98 }
-                            : { translateZ: 0, opacity: 0, scale: 1 }
-                    }
-                    transition={{ type: "spring", stiffness: 240, damping: 22 }}
-                >
-                    {/* Glowing Mesh lines details */}
-                    <div className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-60 animate-[scan_2.8s_linear_infinite]" />
-
-                    {/* Tech stats floating */}
-                    <div className="absolute inset-0 flex flex-col justify-between p-4 font-mono text-[9px] text-[var(--accent)]/90 tracking-widest leading-none select-none">
-                        <div className="flex justify-between">
-                            <span>[3D_MESH_DECONSTRUCT]</span>
-                            <span>ACTIVE: {hovering ? "TRUE" : "FALSE"}</span>
-                        </div>
-                        <div className="flex justify-between items-end">
-                            <span>xYZ_COORD: ROT_3D</span>
-                            <span>01 / 02</span>
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* ─── LAYER 3: FRONT LAYER (ankit.webp) ─── */}
-                <motion.div
-                    className="absolute inset-0 rounded-2xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border)]"
-                    style={{
-                        transformStyle: "preserve-3d",
-                        boxShadow: hovering
-                            ? "0 25px 50px rgba(0,0,0,0.8)"
-                            : "0 10px 30px rgba(0,0,0,0.4)",
-                    }}
-                    animate={
-                        hovering
-                            ? { translateZ: 60, opacity: 0.65, scale: 1.04, filter: "grayscale(100%)" }
-                            : { translateZ: 0, opacity: 1, scale: 1, filter: "grayscale(0%)" }
-                    }
-                    transition={{ type: "spring", stiffness: 220, damping: 20 }}
-                >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src={src1}
-                        alt={alt}
-                        draggable={false}
-                        className="w-full h-full object-cover object-top transition-transform duration-700"
-                    />
-
-                    {/* Corner badge */}
-                    <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-[#333] z-20 pointer-events-none">
-                        <span className="font-mono text-[8px] text-[#888] tracking-widest font-bold">ANKIT_OS.SYS</span>
-                    </div>
-                </motion.div>
-            </motion.div>
-
-            {/* Behind Ambient Neon shadow bloom */}
-            <div
-                className="absolute -inset-4 bg-[var(--accent)] blur-3xl rounded-full transition-opacity duration-700 pointer-events-none -z-20"
-                style={{ opacity: hovering ? 0.18 : 0 }}
             />
 
-            {/* Dynamic touch guide overlay */}
+            {/* ─── IMAGE 1: BASE VIEW (Sits on top, clipped horizontally via clipPath) ─── */}
             <div
-                className="absolute -bottom-8 left-1/2 -translate-x-1/2 font-mono text-[9px] uppercase tracking-[0.2em] text-[#888] transition-opacity duration-300 pointer-events-none"
+                className="absolute inset-0 w-full h-full"
+                style={{
+                    clipPath: `inset(0 ${wipeValue}% 0 0)`, // Clips the right side as slider moves left
+                }}
+            >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src={src1}
+                    alt={alt}
+                    draggable={false}
+                    className="w-full h-full object-cover object-top filter grayscale transition-transform duration-700"
+                    style={{
+                        transform: hovering ? "scale(1.03)" : "scale(1)"
+                    }}
+                />
+            </div>
+
+            {/* ─── INTERACTIVE RADAR DIVIDER BAR ─── */}
+            {/* Draws a high-end active line exactly at the sliding boundary */}
+            <div
+                className="absolute top-0 bottom-0 w-0.5 bg-[var(--accent)] pointer-events-none z-20 transition-opacity duration-300"
+                style={{
+                    left: `${100 - wipeValue}%`,
+                    opacity: hovering ? 1 : 0,
+                    boxShadow: "0 0 10px var(--accent), 0 0 20px var(--accent)"
+                }}
+            >
+                {/* Radial handle glow block */}
+                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2 h-16 rounded-full bg-[var(--accent)] border border-black shadow-lg" />
+            </div>
+
+            {/* ─── DETAILS & METADATA OVERLAYS (Awwwards-style HUD feel) ─── */}
+            <div className="absolute inset-x-0 bottom-3 px-3 flex justify-between items-center font-mono text-[8px] tracking-widest text-white/50 z-30 pointer-events-none">
+                <span className="bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded border border-white/10 uppercase">
+                    {wipeValue > 50 ? "ALT_02" : "SYS_01"}
+                </span>
+                <span className="bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded border border-white/10">
+                    WIPE: {Math.round(wipeValue)}%
+                </span>
+            </div>
+
+            {/* Scan text helper */}
+            <div
+                className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-white/10 text-white/70 font-mono text-[8px] tracking-wider z-30 pointer-events-none opacity-0 transition-opacity duration-300"
+                style={{ opacity: hovering ? 1 : 0 }}
+            >
+                [ INTERACTIVE WIPE ]
+            </div>
+
+            {/* Bottom help label */}
+            <div
+                className="absolute -bottom-8 left-1/2 -translate-x-1/2 font-mono text-[9px] uppercase tracking-[0.2em] text-[#888] pointer-events-none transition-opacity duration-300 whitespace-nowrap"
                 style={{ opacity: hovering ? 1 : 0.6 }}
             >
-                {hovering ? "⚡ Move cursor to tilt mesh" : "⚡ Hover to explode 3D Mesh"}
+                {hovering ? "⚡ drag left/right to compare" : "⚡ hover / swipe to interact"}
             </div>
+
+            {/* Ambient Background Glow */}
+            <div
+                className="absolute -inset-4 bg-[var(--accent)] blur-2xl rounded-full transition-opacity duration-500 pointer-events-none -z-10"
+                style={{ opacity: hovering ? 0.1 : 0 }}
+            />
         </div>
     );
 }
