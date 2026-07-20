@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useRef, useEffect, MouseEvent } from "react";
+import { motion, useSpring, useTransform } from "framer-motion";
 
 interface PixelPhotoFrameProps {
-    src1: string;
-    src2: string;
+    src1: string;  // Base image (ankit.webp)
+    src2: string;  // Second image (ankit2webp.webp)
     width?: number;
     height?: number;
     alt?: string;
@@ -18,144 +18,167 @@ export default function PixelPhotoFrame({
     alt = "Portrait",
 }: PixelPhotoFrameProps) {
     const [hovering, setHovering] = useState(false);
-    const [clickIndex, setClickIndex] = useState(0);
+    const containerRef = useRef<HTMLDivElement>(null);
 
-    // Swap trigger: true if hovered OR odd number of clicks on mobile
-    const showAlt = hovering || (clickIndex % 2 !== 0);
+    // Spring physics configuration for luxurious Awwwards-style lag-free responsiveness
+    const springConfig = { damping: 25, stiffness: 220, mass: 0.6 };
+    const rotateX = useSpring(0, springConfig);
+    const rotateY = useSpring(0, springConfig);
 
-    const toggleClick = () => {
-        setClickIndex(prev => prev + 1);
+    // Handle magnetic coordinate calculations
+    const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+        const el = containerRef.current;
+        if (!el) return;
+
+        const rect = el.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        // Calculate cursor offset percentage from center (-0.5 to 0.5)
+        const percentX = (e.clientX - centerX) / rect.width;
+        const percentY = (e.clientY - centerY) / rect.height;
+
+        // Map to angle limits (max 18deg rotation)
+        rotateX.set(-percentY * 22);
+        rotateY.set(percentX * 22);
     };
 
-    // Transition configurations for high-speed spring feels
-    const springTransition = {
-        type: "spring",
-        stiffness: 420,
-        damping: 28,
-        mass: 0.8
+    const handleMouseLeave = () => {
+        setHovering(false);
+        rotateX.set(0);
+        rotateY.set(0);
+    };
+
+    const handleTouchStart = () => {
+        // Toggle hover state on mobile devices
+        setHovering(prev => !prev);
     };
 
     return (
         <div
-            className="relative select-none cursor-pointer"
-            style={{ width, height }}
+            ref={containerRef}
+            className="relative cursor-pointer select-none"
+            style={{
+                width,
+                height,
+                perspective: "1200px" // Creates depth space for 3D translations
+            }}
+            onMouseMove={handleMouseMove}
             onMouseEnter={() => setHovering(true)}
-            onMouseLeave={() => setHovering(false)}
-            onClick={toggleClick}
+            onMouseLeave={handleMouseLeave}
+            onTouchStart={handleTouchStart}
         >
-            {/* Card Deck container */}
-            <div className="relative w-full h-full">
-
-                {/* ── CARD 2 (ankit2webp.webp) ── */}
+            <motion.div
+                className="w-full h-full relative"
+                style={{
+                    rotateX,
+                    rotateY,
+                    transformStyle: "preserve-3d", // Required to allow children to exist in separate Z spaces
+                }}
+            >
+                {/* ─── LAYER 1: BACK LAYER (ankit2webp.webp) ─── */}
                 <motion.div
-                    className="absolute inset-0 rounded-2xl overflow-hidden border bg-[var(--bg-secondary)]"
+                    className="absolute inset-0 rounded-2xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border)]"
                     style={{
-                        width: "100%",
-                        height: "100%",
-                        originX: 0.5,
-                        originY: 0.5,
-                        boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                        transformStyle: "preserve-3d",
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.6)",
                     }}
                     animate={
-                        showAlt
-                            ? {
-                                // Swaps to front
-                                x: 0,
-                                y: 0,
-                                rotate: -3,
-                                scale: 1.02,
-                                zIndex: 30,
-                                filter: "grayscale(0%)",
-                                borderColor: "var(--accent)",
-                            }
-                            : {
-                                // Back in stack (peeking out)
-                                x: 18,
-                                y: 12,
-                                rotate: 5,
-                                scale: 0.94,
-                                zIndex: 10,
-                                filter: "grayscale(100%)",
-                                borderColor: "var(--border)",
-                            }
+                        hovering
+                            ? { translateZ: -30, opacity: 0.9, filter: "grayscale(0%)" }
+                            : { translateZ: 0, opacity: 0, filter: "grayscale(100%)" }
                     }
-                    transition={springTransition}
+                    transition={{ type: "spring", stiffness: 260, damping: 24 }}
                 >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                         src={src2}
-                        alt="Alternative views"
+                        alt="Alternative view"
                         draggable={false}
                         className="w-full h-full object-cover object-top"
                     />
-                    {/* Card info label */}
-                    <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded border border-[#333] z-20 pointer-events-none">
-                        <span className="font-mono text-[8px] text-[var(--accent)] tracking-widest font-bold">ALT/02</span>
+                </motion.div>
+
+                {/* ─── LAYER 2: MIDDLE HOLOGRAPHIC MESH LAYOUT (Interactive Grid & Scanning lines) ─── */}
+                <motion.div
+                    className="absolute inset-0 rounded-2xl border border-[var(--accent)]/50 pointer-events-none overflow-hidden"
+                    style={{
+                        backgroundImage: `
+                            radial-gradient(var(--accent) 1px, transparent 1.5px),
+                            linear-gradient(rgba(191, 155, 74, 0.03) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(191, 155, 74, 0.03) 1px, transparent 1px)
+                        `,
+                        backgroundSize: "16px 16px, 16px 16px, 16px 16px",
+                        backgroundColor: "rgba(13, 11, 9, 0.55)",
+                        backdropFilter: hovering ? "blur(2px)" : "blur(0px)",
+                        boxShadow: "0 0 40px rgba(191,155,74,0.15), inset 0 0 20px rgba(191,155,74,0.1)",
+                    }}
+                    animate={
+                        hovering
+                            ? { translateZ: 15, opacity: 0.85, scale: 0.98 }
+                            : { translateZ: 0, opacity: 0, scale: 1 }
+                    }
+                    transition={{ type: "spring", stiffness: 240, damping: 22 }}
+                >
+                    {/* Glowing Mesh lines details */}
+                    <div className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-60 animate-[scan_2.8s_linear_infinite]" />
+
+                    {/* Tech stats floating */}
+                    <div className="absolute inset-0 flex flex-col justify-between p-4 font-mono text-[9px] text-[var(--accent)]/90 tracking-widest leading-none select-none">
+                        <div className="flex justify-between">
+                            <span>[3D_MESH_DECONSTRUCT]</span>
+                            <span>ACTIVE: {hovering ? "TRUE" : "FALSE"}</span>
+                        </div>
+                        <div className="flex justify-between items-end">
+                            <span>xYZ_COORD: ROT_3D</span>
+                            <span>01 / 02</span>
+                        </div>
                     </div>
                 </motion.div>
 
-                {/* ── CARD 1 (ankit.webp) ── */}
+                {/* ─── LAYER 3: FRONT LAYER (ankit.webp) ─── */}
                 <motion.div
-                    className="absolute inset-0 rounded-2xl overflow-hidden border bg-[var(--bg-secondary)]"
+                    className="absolute inset-0 rounded-2xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border)]"
                     style={{
-                        width: "100%",
-                        height: "100%",
-                        originX: 0.5,
-                        originY: 0.5,
-                        boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                        transformStyle: "preserve-3d",
+                        boxShadow: hovering
+                            ? "0 25px 50px rgba(0,0,0,0.8)"
+                            : "0 10px 30px rgba(0,0,0,0.4)",
                     }}
                     animate={
-                        showAlt
-                            ? {
-                                // Back in stack (peeking out)
-                                x: -18,
-                                y: 12,
-                                rotate: -5,
-                                scale: 0.94,
-                                zIndex: 10,
-                                filter: "grayscale(100%)",
-                                borderColor: "var(--border)",
-                            }
-                            : {
-                                // Swaps to front
-                                x: 0,
-                                y: 0,
-                                rotate: 2,
-                                scale: 1,
-                                zIndex: 30,
-                                filter: "grayscale(0%)",
-                                borderColor: "var(--border)",
-                            }
+                        hovering
+                            ? { translateZ: 60, opacity: 0.65, scale: 1.04, filter: "grayscale(100%)" }
+                            : { translateZ: 0, opacity: 1, scale: 1, filter: "grayscale(0%)" }
                     }
-                    transition={springTransition}
+                    transition={{ type: "spring", stiffness: 220, damping: 20 }}
                 >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                         src={src1}
                         alt={alt}
                         draggable={false}
-                        className="w-full h-full object-cover object-top"
+                        className="w-full h-full object-cover object-top transition-transform duration-700"
                     />
-                    {/* Card info label */}
-                    <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded border border-[#333] z-20 pointer-events-none">
-                        <span className="font-mono text-[8px] text-[#888] tracking-widest font-bold">BASE/01</span>
+
+                    {/* Corner badge */}
+                    <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-[#333] z-20 pointer-events-none">
+                        <span className="font-mono text-[8px] text-[#888] tracking-widest font-bold">ANKIT_OS.SYS</span>
                     </div>
                 </motion.div>
+            </motion.div>
 
-            </div>
-
-            {/* Glowing active card backdrop */}
+            {/* Behind Ambient Neon shadow bloom */}
             <div
-                className="absolute -inset-4 bg-[var(--accent)] blur-2xl transition-opacity duration-500 rounded-full pointer-events-none -z-10"
-                style={{ opacity: hovering ? 0.12 : 0 }}
+                className="absolute -inset-4 bg-[var(--accent)] blur-3xl rounded-full transition-opacity duration-700 pointer-events-none -z-20"
+                style={{ opacity: hovering ? 0.18 : 0 }}
             />
 
-            {/* Interactive hint label */}
+            {/* Dynamic touch guide overlay */}
             <div
-                className="absolute -bottom-8 left-1/2 -translate-x-1/2 font-mono text-[9px] uppercase tracking-[0.2em] text-[#888] transition-opacity duration-300 pointer-events-none whitespace-nowrap"
+                className="absolute -bottom-8 left-1/2 -translate-x-1/2 font-mono text-[9px] uppercase tracking-[0.2em] text-[#888] transition-opacity duration-300 pointer-events-none"
                 style={{ opacity: hovering ? 1 : 0.6 }}
             >
-                {showAlt ? "⚡ touch / leave to restack" : "⚡ hover / tap to swap"}
+                {hovering ? "⚡ Move cursor to tilt mesh" : "⚡ Hover to explode 3D Mesh"}
             </div>
         </div>
     );

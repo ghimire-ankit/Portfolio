@@ -755,3 +755,18 @@ section {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ============================================
+   HOLOGRAPHIC MESH SCANLINE
+   ============================================ */
+@keyframes scan {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(340px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

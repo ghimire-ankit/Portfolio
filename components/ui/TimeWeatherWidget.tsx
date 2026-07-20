@@ -4,15 +4,29 @@ import { motion } from "framer-motion";
 import { Play, Pause, Sun, Moon, Github } from "lucide-react";
 import { socials } from "@/lib/data";
 
-const MUSIC_SRC = "https://cdn.pixabay.com/download/audio/2022/10/25/audio_946b8f8ef2.mp3";
+const LOCAL_MUSIC_SRC = "/audio/lofi.mp3";
+const FALLBACK_MUSIC_SRC = "https://archive.org/download/yt-5s.com-no-copyright-10-minutes-lofi-chill-instrumental-beat-mellow-128-kbps/yt5s.com-No%20Copyright%20-%2010%20Minutes%20LOFI%20Chill%20Instrumental%20%28Beat%20Mellow%29%20%28128%20kbps%29.mp3";
 
 // Helper for shared audio instance across components
 const getSharedAudio = (): HTMLAudioElement | null => {
     if (typeof window === "undefined") return null;
     if (!(window as any).__lofiAudio) {
-        const a = new Audio(MUSIC_SRC);
+        const a = new Audio(LOCAL_MUSIC_SRC);
         a.loop = true;
         a.volume = 0.28;
+
+        // Auto-failover: if the local /audio/lofi.mp3 is missing or fails to load,
+        // switch to the permanent Internet-based Lofi stream fallback!
+        a.addEventListener("error", () => {
+            if (a.src.includes(LOCAL_MUSIC_SRC)) {
+                console.log("Local audio file not found. Falling back to stable Lofi stream...");
+                a.src = FALLBACK_MUSIC_SRC;
+                // Resume playing the loaded fallback track if user had toggled it on
+                a.play().catch((err) => console.log("Lofi fallback stream playback blocked:", err));
+                window.dispatchEvent(new Event("lofi-audio-state"));
+            }
+        });
+
         (window as any).__lofiAudio = a;
     }
     return (window as any).__lofiAudio;
