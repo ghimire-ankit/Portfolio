@@ -1,49 +1,67 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 
 export default function CustomCursor() {
-    const dotRef = useRef<HTMLDivElement>(null);
     const ringRef = useRef<HTMLDivElement>(null);
+    const dotRef = useRef<HTMLDivElement>(null);
 
+    // Track mouse coordinates
     const mouseX = useMotionValue(-100);
     const mouseY = useMotionValue(-100);
 
-    const ringX = useSpring(mouseX, { stiffness: 120, damping: 24 });
-    const ringY = useSpring(mouseY, { stiffness: 120, damping: 24 });
+    // Standard springs for ultra-smooth lagging ring follow
+    const ringX = useSpring(mouseX, { stiffness: 100, damping: 22 });
+    const ringY = useSpring(mouseY, { stiffness: 100, damping: 22 });
+
+    const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => {
+        // Prevent registering cursor on touch screen devices
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (isTouchDevice) return;
+
         const move = (e: MouseEvent) => {
             mouseX.set(e.clientX);
             mouseY.set(e.clientY);
         };
 
-        const addHover = () => ringRef.current?.classList.add("hover");
-        const removeHover = () => ringRef.current?.classList.remove("hover");
+        // Event delegation for hover states (dynamic and robust)
+        const handleMouseOver = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (!target) return;
+
+            // Check if hover target is interactive
+            const closest = target.closest("a, button, [role='button'], input, textarea, .cursor-pointer, [data-cursor-hover]");
+            if (closest) {
+                setIsHovered(true);
+                ringRef.current?.classList.add("hover");
+                dotRef.current?.classList.add("hover");
+            } else {
+                setIsHovered(false);
+                ringRef.current?.classList.remove("hover");
+                dotRef.current?.classList.remove("hover");
+            }
+        };
 
         window.addEventListener("mousemove", move);
-
-        const interactables = document.querySelectorAll("a, button, [data-cursor-hover]");
-        interactables.forEach((el) => {
-            el.addEventListener("mouseenter", addHover);
-            el.addEventListener("mouseleave", removeHover);
-        });
+        window.addEventListener("mouseover", handleMouseOver);
 
         return () => {
             window.removeEventListener("mousemove", move);
-            interactables.forEach((el) => {
-                el.removeEventListener("mouseenter", addHover);
-                el.removeEventListener("mouseleave", removeHover);
-            });
+            window.removeEventListener("mouseover", handleMouseOver);
         };
     }, [mouseX, mouseY]);
 
     return (
         <div className="cursor" aria-hidden="true">
+            {/* Smooth inner dot */}
             <motion.div
+                ref={dotRef}
                 className="cursor-dot"
                 style={{ left: mouseX, top: mouseY }}
             />
+            {/* Trailing secondary ring */}
             <motion.div
                 ref={ringRef}
                 className="cursor-ring"

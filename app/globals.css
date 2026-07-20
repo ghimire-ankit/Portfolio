@@ -163,31 +163,102 @@ body {
    ============================================ */
 .cursor {
   position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
   pointer-events: none;
   z-index: 10000;
+  mix-blend-mode: difference;
+  /* Beautiful inversion look over text */
 }
 
 .cursor-dot {
-  width: 5px;
-  height: 5px;
+  position: absolute;
+  pointer-events: none;
+  width: 6px;
+  height: 6px;
   background: var(--accent);
   border-radius: 50%;
   transform: translate(-50%, -50%);
+  transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease;
+}
+
+.cursor-dot.hover {
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  /* contrast pop */
 }
 
 .cursor-ring {
-  width: 32px;
-  height: 32px;
-  border: 1px solid rgba(191, 155, 74, 0.35);
+  position: absolute;
+  pointer-events: none;
+  width: 36px;
+  height: 36px;
+  border: 1px dashed var(--accent);
+  /* dashed tech wireframe style */
+  opacity: 0.65;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  transition: width 0.25s ease, height 0.25s ease, border-color 0.25s ease;
+  transition: width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+    height 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+    border-color 0.25s ease,
+    border-style 0.25s ease;
 }
 
 .cursor-ring.hover {
-  width: 48px;
-  height: 48px;
-  border-color: rgba(191, 155, 74, 0.7);
+  width: 54px;
+  height: 54px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  /* Solid glowing circle on hover */
+  animation: cursor-spin 8s linear infinite;
+  /* rotation */
+}
+
+@keyframes cursor-spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Hide native cursor on desktop to let custom cursor shine */
+@media (hover: hover) and (pointer: fine) {
+
+  html,
+  body,
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  [role="button"],
+  .cursor-pointer {
+    cursor: none !important;
+  }
+}
+
+/* Safely restore native cursor on touch screen devices */
+@media (hover: none) and (pointer: coarse) {
+  .cursor {
+    display: none !important;
+  }
+
+  html,
+  body,
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  [role="button"],
+  .cursor-pointer {
+    cursor: auto !important;
+  }
 }
 
 /* ============================================
@@ -763,9 +834,11 @@ section {
   0% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(340px);
   }
+
   100% {
     transform: translateY(0);
   }
