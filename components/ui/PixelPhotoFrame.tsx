@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface PixelPhotoFrameProps {
     src1: string;
@@ -9,18 +10,6 @@ interface PixelPhotoFrameProps {
     alt?: string;
 }
 
-// ── Grid config ───────────────────────────────────────────────────────────
-const COLS = 10;
-const ROWS = 10;
-const TOTAL = COLS * ROWS;
-
-// Stagger delay per tile (diagonal wave pattern)
-const tileDelay = (col: number, row: number) => {
-    // diagonal wave: tiles closest to top-left animate first
-    const diag = (col + row) / (COLS + ROWS - 2);
-    return diag * 0.38; // max 380ms spread
-};
-
 export default function PixelPhotoFrame({
     src1,
     src2,
@@ -29,140 +18,144 @@ export default function PixelPhotoFrame({
     alt = "Portrait",
 }: PixelPhotoFrameProps) {
     const [hovering, setHovering] = useState(false);
-    const [touched, setTouched] = useState(false); // toggle for mobile
+    const [clickIndex, setClickIndex] = useState(0);
 
-    const isActive = hovering || touched;
+    // Swap trigger: true if hovered OR odd number of clicks on mobile
+    const showAlt = hovering || (clickIndex % 2 !== 0);
 
-    const handleTouch = () => setTouched(t => !t);
+    const toggleClick = () => {
+        setClickIndex(prev => prev + 1);
+    };
+
+    // Transition configurations for high-speed spring feels
+    const springTransition = {
+        type: "spring",
+        stiffness: 420,
+        damping: 28,
+        mass: 0.8
+    };
 
     return (
         <div
-            className="relative overflow-hidden select-none"
-            style={{ width, height, cursor: "none" }}
+            className="relative select-none cursor-pointer"
+            style={{ width, height }}
             onMouseEnter={() => setHovering(true)}
             onMouseLeave={() => setHovering(false)}
-            onTouchStart={handleTouch}
+            onClick={toggleClick}
         >
-            {/* ── IMAGE 1 — always rendered underneath (base) ── */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-                src={src1}
-                alt={alt}
-                draggable={false}
-                style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    objectPosition: "top",
-                    display: "block",
-                    filter: "grayscale(1)",
-                    transition: "filter 0.6s ease",
-                }}
-            />
+            {/* Card Deck container */}
+            <div className="relative w-full h-full">
 
-            {/* ── IMAGE 2 — sits on top, revealed by grid tiles disappearing ── */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-                src={src2}
-                alt={alt}
-                draggable={false}
-                style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    objectPosition: "top",
-                    display: "block",
-                }}
-            />
+                {/* ── CARD 2 (ankit2webp.webp) ── */}
+                <motion.div
+                    className="absolute inset-0 rounded-2xl overflow-hidden border bg-[var(--bg-secondary)]"
+                    style={{
+                        width: "100%",
+                        height: "100%",
+                        originX: 0.5,
+                        originY: 0.5,
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                    }}
+                    animate={
+                        showAlt
+                            ? {
+                                // Swaps to front
+                                x: 0,
+                                y: 0,
+                                rotate: -3,
+                                scale: 1.02,
+                                zIndex: 30,
+                                filter: "grayscale(0%)",
+                                borderColor: "var(--accent)",
+                            }
+                            : {
+                                // Back in stack (peeking out)
+                                x: 18,
+                                y: 12,
+                                rotate: 5,
+                                scale: 0.94,
+                                zIndex: 10,
+                                filter: "grayscale(100%)",
+                                borderColor: "var(--border)",
+                            }
+                    }
+                    transition={springTransition}
+                >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={src2}
+                        alt="Alternative views"
+                        draggable={false}
+                        className="w-full h-full object-cover object-top"
+                    />
+                    {/* Card info label */}
+                    <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded border border-[#333] z-20 pointer-events-none">
+                        <span className="font-mono text-[8px] text-[var(--accent)] tracking-widest font-bold">ALT/02</span>
+                    </div>
+                </motion.div>
 
-            {/* ── TILE GRID OVERLAY ── */}
-            {/* On hover: tiles scale to 0 → image2 is revealed */}
-            {/* On leave: tiles scale back to 1 → back to image1 (grayscale) */}
-            <div
-                style={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "grid",
-                    gridTemplateColumns: `repeat(${COLS}, 1fr)`,
-                    gridTemplateRows: `repeat(${ROWS}, 1fr)`,
-                    pointerEvents: "none",
-                }}
-            >
-                {Array.from({ length: TOTAL }).map((_, idx) => {
-                    const col = idx % COLS;
-                    const row = Math.floor(idx / COLS);
-                    const delay = tileDelay(col, row);
+                {/* ── CARD 1 (ankit.webp) ── */}
+                <motion.div
+                    className="absolute inset-0 rounded-2xl overflow-hidden border bg-[var(--bg-secondary)]"
+                    style={{
+                        width: "100%",
+                        height: "100%",
+                        originX: 0.5,
+                        originY: 0.5,
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                    }}
+                    animate={
+                        showAlt
+                            ? {
+                                // Back in stack (peeking out)
+                                x: -18,
+                                y: 12,
+                                rotate: -5,
+                                scale: 0.94,
+                                zIndex: 10,
+                                filter: "grayscale(100%)",
+                                borderColor: "var(--border)",
+                            }
+                            : {
+                                // Swaps to front
+                                x: 0,
+                                y: 0,
+                                rotate: 2,
+                                scale: 1,
+                                zIndex: 30,
+                                filter: "grayscale(0%)",
+                                borderColor: "var(--border)",
+                            }
+                    }
+                    transition={springTransition}
+                >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={src1}
+                        alt={alt}
+                        draggable={false}
+                        className="w-full h-full object-cover object-top"
+                    />
+                    {/* Card info label */}
+                    <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded border border-[#333] z-20 pointer-events-none">
+                        <span className="font-mono text-[8px] text-[#888] tracking-widest font-bold">BASE/01</span>
+                    </div>
+                </motion.div>
 
-                    return (
-                        <div
-                            key={idx}
-                            style={{
-                                background: "var(--bg-primary)",
-                                transform: isActive ? "scale(0)" : "scale(1)",
-                                transformOrigin: "center",
-                                transition: isActive
-                                    ? `transform 0.3s cubic-bezier(0.65, 0, 0.35, 1) ${delay}s`
-                                    : `transform 0.35s cubic-bezier(0.65, 0, 0.35, 1) ${0.38 - delay}s`,
-                            }}
-                        />
-                    );
-                })}
             </div>
 
-            {/* ── ACCENT BORDER ── */}
+            {/* Glowing active card backdrop */}
             <div
-                style={{
-                    position: "absolute",
-                    inset: 0,
-                    pointerEvents: "none",
-                    border: isActive
-                        ? "1px solid var(--accent)"
-                        : "1px solid var(--border)",
-                    boxShadow: isActive
-                        ? "0 0 0 1px var(--accent), inset 0 0 60px rgba(191,155,74,0.08)"
-                        : "none",
-                    transition: "border-color 0.4s ease, box-shadow 0.4s ease",
-                    zIndex: 10,
-                }}
+                className="absolute -inset-4 bg-[var(--accent)] blur-2xl transition-opacity duration-500 rounded-full pointer-events-none -z-10"
+                style={{ opacity: hovering ? 0.12 : 0 }}
             />
 
-            {/* ── AMBIENT GLOW ── */}
+            {/* Interactive hint label */}
             <div
-                style={{
-                    position: "absolute",
-                    inset: "-20px",
-                    background: "var(--accent)",
-                    filter: "blur(40px)",
-                    opacity: isActive ? 0.12 : 0,
-                    transition: "opacity 0.5s ease",
-                    zIndex: -1,
-                    pointerEvents: "none",
-                }}
-            />
-
-            {/* ── CORNER LABEL ── */}
-            <div
-                style={{
-                    position: "absolute",
-                    top: 10,
-                    right: 10,
-                    fontFamily: "monospace",
-                    fontSize: 7,
-                    letterSpacing: "0.2em",
-                    textTransform: "uppercase",
-                    color: "var(--accent)",
-                    textShadow: "0 0 10px var(--accent)",
-                    opacity: isActive ? 1 : 0,
-                    transition: "opacity 0.3s ease",
-                    pointerEvents: "none",
-                    zIndex: 20,
-                }}
+                className="absolute -bottom-8 left-1/2 -translate-x-1/2 font-mono text-[9px] uppercase tracking-[0.2em] text-[#888] transition-opacity duration-300 pointer-events-none whitespace-nowrap"
+                style={{ opacity: hovering ? 1 : 0.6 }}
             >
-                [ alt view ]
+                {showAlt ? "⚡ touch / leave to restack" : "⚡ hover / tap to swap"}
             </div>
         </div>
     );
