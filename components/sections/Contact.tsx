@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { socials, personal } from "@/lib/data";
 import { Github, Linkedin, Mail, ArrowUpRight } from "lucide-react";
@@ -12,6 +13,16 @@ const getSocialIcon = (name: string) => {
 };
 
 export default function Contact() {
+    const [emailStatus, setEmailStatus] = useState("Say Hello");
+
+    const handleCopyEmail = () => {
+        navigator.clipboard.writeText("ankitghimire2004@gmail.com");
+        setEmailStatus("Email Copied!");
+        setTimeout(() => {
+            setEmailStatus("Say Hello");
+        }, 2200);
+    };
+
     return (
         <section id="contact" className="text-center">
             <motion.span
@@ -54,11 +65,14 @@ export default function Contact() {
                 transition={{ duration: 0.5, delay: 0.25 }}
             >
                 <a
-                    href={`mailto:${personal.stats ? "ankitghimire2004@gmail.com" : ""}`}
-                    className="btn-primary"
+                    href="mailto:ankitghimire2004@gmail.com"
+                    className="btn-primary pointer-events-auto"
+                    onClick={handleCopyEmail}
                 >
-                    <Mail size={13} />
-                    <span><TextScramble text="Say Hello" /></span>
+                    <Mail size={13} className="pointer-events-none" />
+                    <span className="pointer-events-none">
+                        <TextScramble text={emailStatus} key={emailStatus} />
+                    </span>
                 </a>
             </motion.div>
 

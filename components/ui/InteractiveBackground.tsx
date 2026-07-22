@@ -12,7 +12,7 @@ const hexToRgb = (hex: string) => {
             g: parseInt(result[2], 16),
             b: parseInt(result[3], 16),
         }
-        : { r: 226, g: 168, b: 77 }; // default fallback (gold)
+        : { r: 124, g: 59, b: 237 }; // default fallback (violet)
 };
 
 export default function InteractiveBackground() {
@@ -30,19 +30,73 @@ export default function InteractiveBackground() {
         let height = (canvas.height = window.innerHeight);
 
         // Keep track of current dynamic theme coordinates
-        let currentRgb = { r: 226, g: 168, b: 77 };
+        let currentRgb = { r: 124, g: 59, b: 237 };
+        let isLight = false;
 
         const updateAccentColor = () => {
             const rawAccent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
             if (rawAccent && rawAccent.startsWith("#")) {
                 currentRgb = hexToRgb(rawAccent);
             }
+            isLight = document.documentElement.classList.contains("light");
         };
 
         // Initialize colors
         updateAccentColor();
 
-        // Particle template
+        // Blob definition for slowly shifting aura mesh gradient circles
+        class AuraBlob {
+            x: number;
+            y: number;
+            vx: number;
+            vy: number;
+            radius: number;
+            colorDark: string;
+            colorLight: string;
+
+            constructor(x: number, y: number, radius: number, colorDark: string, colorLight: string) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 0.45;
+                this.vy = (Math.random() - 0.5) * 0.45;
+                this.radius = radius;
+                this.colorDark = colorDark;
+                this.colorLight = colorLight;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Orbit bounds
+                if (this.x < -100 || this.x > width + 100) this.vx *= -1;
+                if (this.y < -100 || this.y > height + 100) this.vy *= -1;
+            }
+
+            draw(c: CanvasRenderingContext2D, lightMode: boolean) {
+                c.save();
+                c.beginPath();
+                const color = lightMode ? this.colorLight : this.colorDark;
+                // Create a radial color blend
+                const grad = c.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                const opacity = lightMode ? 0.05 : 0.07;
+                grad.addColorStop(0, color.replace(")", `, ${opacity})`).replace("rgb", "rgba"));
+                grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+                c.fillStyle = grad;
+                c.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                c.fill();
+                c.restore();
+            }
+        }
+
+        // Initialize 3 huge, colorful auroral blobs
+        const blobs: AuraBlob[] = [
+            new AuraBlob(width * 0.25, height * 0.3, 500, "rgb(124, 58, 237)", "rgb(168, 85, 247)"), // Purple / Lavender
+            new AuraBlob(width * 0.75, height * 0.4, 600, "rgb(37, 99, 235)", "rgb(59, 130, 246)"),  // Blue / Sky
+            new AuraBlob(width * 0.5, height * 0.8, 550, "rgb(219, 39, 119)", "rgb(244, 114, 182)"), // Pink / Rose
+        ];
+
+        // Star Particle configuration
         class Particle {
             x: number;
             y: number;
@@ -53,9 +107,9 @@ export default function InteractiveBackground() {
             constructor() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 0.3;
-                this.vy = (Math.random() - 0.5) * 0.3;
-                this.radius = Math.random() * 1.5 + 0.65;
+                this.vx = (Math.random() - 0.5) * 0.25;
+                this.vy = (Math.random() - 0.5) * 0.25;
+                this.radius = Math.random() * 1.5 + 0.6;
             }
 
             update() {
@@ -70,19 +124,18 @@ export default function InteractiveBackground() {
             draw(c: CanvasRenderingContext2D, rgb: { r: number; g: number; b: number }) {
                 c.beginPath();
                 c.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                c.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.25)`;
+                c.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.22)`;
                 c.fill();
             }
         }
 
-        // Initialize particles
         const particleCount = Math.min(65, Math.floor((width * height) / 22000));
         const particles: Particle[] = [];
         for (let i = 0; i < particleCount; i++) {
             particles.push(new Particle());
         }
 
-        // Mouse behavior tracking
+        // Mouse coordinates follow
         const mouse = { x: -1000, y: -1000, active: false };
 
         const handleMouseMove = (e: MouseEvent) => {
@@ -113,7 +166,13 @@ export default function InteractiveBackground() {
         const render = () => {
             ctx.clearRect(0, 0, width, height);
 
-            // Redraw particles
+            // 1. Draw glowing aura blobs in the background panel
+            blobs.forEach((b) => {
+                b.update();
+                b.draw(ctx, isLight);
+            });
+
+            // 2. Draw & update particles
             particles.forEach((p) => {
                 p.update();
                 p.draw(ctx, currentRgb);
@@ -131,7 +190,7 @@ export default function InteractiveBackground() {
                 }
             });
 
-            // Repaint lines
+            // 3. Connect nodes
             for (let i = 0; i < particles.length; i++) {
                 const p1 = particles[i];
 
@@ -151,7 +210,7 @@ export default function InteractiveBackground() {
                     }
                 }
 
-                // Node link lines
+                // Node-to-node link lines
                 for (let j = i + 1; j < particles.length; j++) {
                     const p2 = particles[j];
                     const dx = p1.x - p2.x;
@@ -188,7 +247,7 @@ export default function InteractiveBackground() {
         <canvas
             ref={canvasRef}
             className="fixed inset-0 pointer-events-none -z-30 block"
-            style={{ mixBlendMode: "difference" }} // Blend perfectly with both dark & light backgrounds
+            style={{ mixBlendMode: "normal" }} // Soft transparency blends perfectly
         />
     );
 }
