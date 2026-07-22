@@ -73,6 +73,7 @@ export const projects: Project[] = [
         githubUrl: "https://github.com/ghimire-ankit/kothabhada-web",
         featured: false,
         category: "Full-Stack",
+        image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=1000&auto=format&fit=crop", // Rental apartment interior
     },
     {
         id: 4,
@@ -85,6 +86,7 @@ export const projects: Project[] = [
         githubUrl: "https://github.com/ghimire-ankit/ContentGenerator",
         featured: false,
         category: "AI Tool",
+        image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop", // AI tech gradient abstract
     },
 ];
 

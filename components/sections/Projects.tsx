@@ -1,8 +1,8 @@
 "use client";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import { projects } from "@/lib/data";
 import { ExternalLink, Github, ArrowUpRight } from "lucide-react";
-import Image from "next/image";
 
 const techTag = (tag: string) => (
     <span
@@ -16,6 +16,21 @@ const techTag = (tag: string) => (
 export default function Projects() {
     const featured = projects.filter((p) => p.featured);
     const others = projects.filter((p) => !p.featured);
+
+    // Floating Image Follower States
+    const [hoveredImg, setHoveredImg] = useState<string | null>(null);
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+
+    const springConfig = { stiffness: 220, damping: 26, mass: 0.5 };
+    const x = useSpring(mouseX, springConfig);
+    const y = useSpring(mouseY, springConfig);
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        // Track client coordinates
+        mouseX.set(e.clientX);
+        mouseY.set(e.clientY);
+    };
 
     return (
         <section id="projects" className="relative">
@@ -110,7 +125,7 @@ export default function Projects() {
             </div>
 
             {/* Other Projects */}
-            <div className="relative z-10">
+            <div className="relative z-10" onMouseMove={handleMouseMove}>
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--accent)] mb-6">More Explorations</p>
                 <div className="border-t border-[var(--border)]">
                     {others.map((project, i) => (
@@ -124,6 +139,8 @@ export default function Projects() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, margin: "-40px" }}
                             transition={{ duration: 0.45, delay: i * 0.1 }}
+                            onMouseEnter={() => setHoveredImg(project.image || null)}
+                            onMouseLeave={() => setHoveredImg(null)}
                         >
                             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 py-2">
                                 <span className="project-row-num hidden sm:block">{(i + 1).toString().padStart(2, "0")}</span>
@@ -147,6 +164,43 @@ export default function Projects() {
                     ))}
                 </div>
             </div>
+
+            {/* ─── AWWWARDS PORTFOLIO: FLOATING IMAGE PREVIEW FOLLOWER ─── */}
+            <AnimatePresence>
+                {hoveredImg && (
+                    <motion.div
+                        className="fixed pointer-events-none z-[9999] hidden lg:block overflow-hidden rounded-xl border border-[var(--accent)]/40 bg-[#12100e]"
+                        style={{
+                            left: x,
+                            top: y,
+                            width: 280,
+                            height: 170,
+                            x: 25, // Offset to right of cursor
+                            y: -85, // Centered vertically relative to cursor
+                            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(191,155,74,0.15)",
+                            transformStyle: "preserve-3d"
+                        }}
+                        initial={{ opacity: 0, scale: 0.8, rotate: -4 }}
+                        animate={{ opacity: 1, scale: 1, rotate: 2 }}
+                        exit={{ opacity: 0, scale: 0.8, rotate: -4 }}
+                        transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+                    >
+                        <motion.img
+                            src={hoveredImg}
+                            alt="Project Preview"
+                            className="w-full h-full object-cover"
+                            initial={{ scale: 1.12 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.4 }}
+                        />
+                        {/* High-tech hud overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                        <div className="absolute bottom-2.5 right-3 font-mono text-[7px] tracking-widest text-[var(--accent)] uppercase opacity-80">
+                            [ sys.live_preview ]
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </section>
     );
 }
