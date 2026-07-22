@@ -6,38 +6,39 @@
    DESIGN TOKENS
    ============================================ */
 :root {
-  --bg-primary: #080706;
-  --bg-secondary: #0D0B09;
-  --bg-surface: #161410;
-  --text-primary: #EDE8DF;
-  --text-secondary: #6B6560;
-  --accent: #BF9B4A;
-  --accent-muted: rgba(191, 155, 74, 0.09);
-  --border: #201E1A;
+  --bg-primary: #060608;
+  --bg-secondary: #0c0d10;
+  --bg-surface: #121318;
+  --text-primary: #f1eff5;
+  --text-secondary: #8b8a9c;
+  --accent: #e2a84d;
+  --accent-muted: rgba(226, 168, 77, 0.08);
+  --border: #1a1b24;
 
   /* Terminal colors */
-  --term-bg: #0C0C0C;
-  --term-titlebar: #1A1A1A;
-  --term-cmd: #28C840;
-  --term-output: #A8D4A8;
-  --term-border: #2A2A2A;
+  --term-bg: #09090b;
+  --term-titlebar: #13141a;
+  --term-cmd: #e2a84d;
+  --term-output: #b8b7cf;
+  --term-border: #1a1b24;
 }
 
 :root.light {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f7f7f7;
-  --bg-surface: #eeeeee;
-  --text-primary: #111111;
-  --text-secondary: #555555;
-  --accent: #2e6ff2;
-  --accent-muted: rgba(46, 111, 242, 0.15);
-  --border: #e0e0e0;
+  --bg-primary: #fafafc;
+  --bg-secondary: #f3f3f8;
+  --bg-surface: #eae9f2;
+  --text-primary: #0a0b0e;
+  --text-secondary: #656475;
+  --accent: #c48722;
+  --accent-muted: rgba(196, 135, 34, 0.14);
+  --border: #dbdbe6;
 
-  --term-bg: #f5f5f5;
-  --term-titlebar: #eaeaea;
-  --term-cmd: #111111;
-  --term-output: #444444;
-  --term-border: #d0d0d0;
+  /* Terminal colors - Light Mode */
+  --term-bg: #f3f3f8;
+  --term-titlebar: #eae9f2;
+  --term-cmd: #0a0b0e;
+  --term-output: #474754;
+  --term-border: #dbdbe6;
 }
 
 /* User Selection Config */

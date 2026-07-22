@@ -1,6 +1,20 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 
+// Helper to convert hex strings to RGB
+const hexToRgb = (hex: string) => {
+    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    const fullHex = hex.replace(shorthandRegex, (_, r, g, b) => r + r + g + g + b + b);
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex);
+    return result
+        ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+        }
+        : { r: 226, g: 168, b: 77 }; // default fallback (gold)
+};
+
 export default function InteractiveBackground() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -15,7 +29,20 @@ export default function InteractiveBackground() {
         let width = (canvas.width = window.innerWidth);
         let height = (canvas.height = window.innerHeight);
 
-        // Particle class definition
+        // Keep track of current dynamic theme coordinates
+        let currentRgb = { r: 226, g: 168, b: 77 };
+
+        const updateAccentColor = () => {
+            const rawAccent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+            if (rawAccent && rawAccent.startsWith("#")) {
+                currentRgb = hexToRgb(rawAccent);
+            }
+        };
+
+        // Initialize colors
+        updateAccentColor();
+
+        // Particle template
         class Particle {
             x: number;
             y: number;
@@ -26,25 +53,24 @@ export default function InteractiveBackground() {
             constructor() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                // very slow, elegant drifts
-                this.vx = (Math.random() - 0.5) * 0.35;
-                this.vy = (Math.random() - 0.5) * 0.35;
-                this.radius = Math.random() * 1.5 + 0.5;
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.radius = Math.random() * 1.5 + 0.65;
             }
 
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // Bounce off edges
+                // Bounce behavior
                 if (this.x < 0 || this.x > width) this.vx *= -1;
                 if (this.y < 0 || this.y > height) this.vy *= -1;
             }
 
-            draw(c: CanvasRenderingContext25D) {
+            draw(c: CanvasRenderingContext2D, rgb: { r: number; g: number; b: number }) {
                 c.beginPath();
                 c.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                c.fillStyle = "rgba(191, 155, 74, 0.22)"; // gold tint
+                c.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.25)`;
                 c.fill();
             }
         }
@@ -56,7 +82,7 @@ export default function InteractiveBackground() {
             particles.push(new Particle());
         }
 
-        // Track cursor coordinates
+        // Mouse behavior tracking
         const mouse = { x: -1000, y: -1000, active: false };
 
         const handleMouseMove = (e: MouseEvent) => {
@@ -80,50 +106,52 @@ export default function InteractiveBackground() {
         };
         window.addEventListener("resize", handleResize);
 
-        // Core animation loop
+        // Periodically verify theme switch color changes
+        const themeChecker = setInterval(updateAccentColor, 800);
+
+        // Core render animation
         const render = () => {
             ctx.clearRect(0, 0, width, height);
 
-            // Update & draw particles
+            // Redraw particles
             particles.forEach((p) => {
                 p.update();
-                p.draw(ctx);
+                p.draw(ctx, currentRgb);
 
-                // Magnetic attraction/repulsion logic from cursor
+                // Mouse repel force
                 if (mouse.active) {
                     const dx = mouse.x - p.x;
                     const dy = mouse.y - p.y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 180) {
-                        // Gently push the particle away from cursor
-                        const force = (180 - dist) / 180;
-                        p.x -= (dx / dist) * force * 0.9;
-                        p.y -= (dy / dist) * force * 0.9;
+                    if (dist < 160) {
+                        const force = (160 - dist) / 160;
+                        p.x -= (dx / dist) * force * 0.75;
+                        p.y -= (dy / dist) * force * 0.75;
                     }
                 }
             });
 
-            // Draw link connections between nodes
+            // Repaint lines
             for (let i = 0; i < particles.length; i++) {
                 const p1 = particles[i];
 
-                // Connect to cursor
+                // Mouse link lines
                 if (mouse.active) {
                     const dx = mouse.x - p1.x;
                     const dy = mouse.y - p1.y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
                     if (dist < 150) {
-                        const alpha = (1 - dist / 150) * 0.15;
+                        const alpha = (1 - dist / 150) * 0.16;
                         ctx.beginPath();
                         ctx.moveTo(p1.x, p1.y);
                         ctx.lineTo(mouse.x, mouse.y);
-                        ctx.strokeStyle = `rgba(191, 155, 74, ${alpha})`;
+                        ctx.strokeStyle = `rgba(${currentRgb.r}, ${currentRgb.g}, ${currentRgb.b}, ${alpha})`;
                         ctx.lineWidth = 0.55;
                         ctx.stroke();
                     }
                 }
 
-                // Connect to neighboring nodes
+                // Node link lines
                 for (let j = i + 1; j < particles.length; j++) {
                     const p2 = particles[j];
                     const dx = p1.x - p2.x;
@@ -131,11 +159,11 @@ export default function InteractiveBackground() {
                     const dist = Math.sqrt(dx * dx + dy * dy);
 
                     if (dist < 110) {
-                        const alpha = (1 - dist / 110) * 0.07;
+                        const alpha = (1 - dist / 110) * 0.08;
                         ctx.beginPath();
                         ctx.moveTo(p1.x, p1.y);
                         ctx.lineTo(p2.x, p2.y);
-                        ctx.strokeStyle = `rgba(191, 155, 74, ${alpha})`;
+                        ctx.strokeStyle = `rgba(${currentRgb.r}, ${currentRgb.g}, ${currentRgb.b}, ${alpha})`;
                         ctx.lineWidth = 0.45;
                         ctx.stroke();
                     }
@@ -149,6 +177,7 @@ export default function InteractiveBackground() {
 
         return () => {
             cancelAnimationFrame(animationFrameId);
+            clearInterval(themeChecker);
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("mouseleave", handleMouseLeave);
             window.removeEventListener("resize", handleResize);
@@ -159,9 +188,7 @@ export default function InteractiveBackground() {
         <canvas
             ref={canvasRef}
             className="fixed inset-0 pointer-events-none -z-30 block"
-            style={{ mixBlendMode: "screen" }}
+            style={{ mixBlendMode: "difference" }} // Blend perfectly with both dark & light backgrounds
         />
     );
 }
-// Fix canvas rendering context typing
-interface CanvasRenderingContext25D extends CanvasRenderingContext2D { }
