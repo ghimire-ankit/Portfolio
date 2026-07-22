@@ -11,6 +11,7 @@ import Interests from "@/components/sections/Interests";
 import Contact from "@/components/sections/Contact";
 import CustomCursor from "@/components/ui/CustomCursor";
 import GrainOverlay from "@/components/ui/GrainOverlay";
+import InteractiveBackground from "@/components/ui/InteractiveBackground";
 import ScrollProgress from "@/components/ui/ScrollProgress";
 import Preloader from "@/components/ui/Preloader";
 import TimeWeatherWidget from "@/components/ui/TimeWeatherWidget";
@@ -56,6 +57,7 @@ export default function Home() {
                         transition={{ duration: 0.6 }}
                     >
                         <GrainOverlay />
+                        <InteractiveBackground />
                         <ScrollProgress />
                         <CustomCursor />
                         <Navbar />

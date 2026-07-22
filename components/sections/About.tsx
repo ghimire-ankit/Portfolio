@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { personal } from "@/lib/data";
 import Terminal from "@/components/ui/Terminal";
 import PixelPhotoFrame from "@/components/ui/PixelPhotoFrame";
+import TextScramble from "@/components/ui/TextScramble";
 
 
 const fadeUp = {
@@ -20,7 +21,9 @@ export default function About() {
             <span className="section-num select-none" aria-hidden>01</span>
 
             <div className="section-label">
-                <span className="text-label text-[var(--accent)]">About</span>
+                <span className="text-label text-[var(--accent)]">
+                    <TextScramble text="About" />
+                </span>
             </div>
 
             <div className="grid lg:grid-cols-[1fr,auto] gap-16 items-start relative z-10 mb-16">

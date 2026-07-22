@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { socials, personal } from "@/lib/data";
 import { Github, Linkedin, Mail, ArrowUpRight } from "lucide-react";
+import TextScramble from "@/components/ui/TextScramble";
 
 const getSocialIcon = (name: string) => {
     if (name === "GitHub") return <Github size={16} />;
@@ -20,7 +21,7 @@ export default function Contact() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
             >
-                Get in touch
+                <TextScramble text="Get in touch" />
             </motion.span>
 
             <motion.h2
@@ -57,7 +58,7 @@ export default function Contact() {
                     className="btn-primary"
                 >
                     <Mail size={13} />
-                    <span>Say Hello</span>
+                    <span><TextScramble text="Say Hello" /></span>
                 </a>
             </motion.div>
 

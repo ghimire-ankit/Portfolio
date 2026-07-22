@@ -1,6 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import { experiences } from "@/lib/data";
+import TextScramble from "@/components/ui/TextScramble";
 
 export default function Experience() {
     return (
@@ -8,7 +9,9 @@ export default function Experience() {
             <span className="section-num select-none" aria-hidden>02</span>
 
             <div className="section-label">
-                <span className="text-label text-[var(--accent)]">Experience & Education</span>
+                <span className="text-label text-[var(--accent)]">
+                    <TextScramble text="Experience & Education" />
+                </span>
             </div>
 
             <motion.h2

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import { projects } from "@/lib/data";
 import { ExternalLink, Github, ArrowUpRight } from "lucide-react";
+import TextScramble from "@/components/ui/TextScramble";
 
 const techTag = (tag: string) => (
     <span
@@ -37,7 +38,9 @@ export default function Projects() {
             <span className="section-num select-none" aria-hidden>03</span>
 
             <div className="section-label">
-                <span className="text-label text-[var(--accent)]">Work / Projects</span>
+                <span className="text-label text-[var(--accent)]">
+                    <TextScramble text="Work / Projects" />
+                </span>
             </div>
 
             <motion.h2

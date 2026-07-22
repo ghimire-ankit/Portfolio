@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { skills } from "@/lib/data";
+import TextScramble from "@/components/ui/TextScramble";
 
 const innerSkills = ["React", "Next.js", "TypeScript", "Tailwind CSS", "HTML / CSS", "WordPress", "Canva"];
 const outerSkills = ["Node.js", "Python", "Flask", "MySQL", "PostgreSQL", "Express.js", "Git / GitHub", "Figma", "Vercel", "Gemini API", "Zustand"];
@@ -84,7 +85,9 @@ export default function Skills() {
             <span className="section-num select-none" aria-hidden>04</span>
 
             <div className="section-label">
-                <span className="text-label text-[var(--accent)]">Skills</span>
+                <span className="text-label text-[var(--accent)]">
+                    <TextScramble text="Skills" />
+                </span>
             </div>
 
             <motion.h2

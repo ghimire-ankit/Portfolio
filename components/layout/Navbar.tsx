@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { personal, socials } from "@/lib/data";
 import { Github, Linkedin, Mail, Play, Pause, Sun, Moon } from "lucide-react";
+import TextScramble from "@/components/ui/TextScramble";
 
 const navItems = [
     { label: "About", href: "#about" },
@@ -159,9 +160,9 @@ export default function Navbar() {
                         <button
                             key={item.label}
                             onClick={() => handleNav(item.href)}
-                            className="nav-link"
+                            className="nav-link group"
                         >
-                            {item.label}
+                            <TextScramble text={item.label} />
                         </button>
                     ))}
                 </div>
