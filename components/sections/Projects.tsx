@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motio
 import { projects } from "@/lib/data";
 import { ExternalLink, Github, ArrowUpRight } from "lucide-react";
 import TextScramble from "@/components/ui/TextScramble";
+import { HoverFeatureCards } from "@/components/ui/HoverFeatureCards";
 
 const techTag = (tag: string) => (
     <span
@@ -127,83 +128,27 @@ export default function Projects() {
                 ))}
             </div>
 
-            {/* Other Projects */}
-            <div className="relative z-10" onMouseMove={handleMouseMove}>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--accent)] mb-6">More Explorations</p>
-                <div className="border-t border-[var(--border)]">
-                    {others.map((project, i) => (
-                        <motion.a
-                            key={project.id}
-                            href={project.liveUrl || project.githubUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="project-row group block"
-                            initial={{ opacity: 0, y: 16 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-40px" }}
-                            transition={{ duration: 0.45, delay: i * 0.1 }}
-                            onMouseEnter={() => setHoveredImg(project.image || null)}
-                            onMouseLeave={() => setHoveredImg(null)}
-                        >
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 py-2">
-                                <span className="project-row-num hidden sm:block">{(i + 1).toString().padStart(2, "0")}</span>
-                                <div className="flex-1 min-w-0">
-                                    <span className="font-outfit text-2xl font-bold text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors duration-300 block leading-tight tracking-tight">
-                                        {project.name}
-                                    </span>
-                                    <span className="font-mono text-[10px] text-[var(--text-secondary)] mt-1 block tracking-widest uppercase">{project.tagline}</span>
-                                </div>
-                                <div className="hidden lg:flex flex-wrap gap-2">
-                                    {project.tech.slice(0, 3).map((tag) => (
-                                        <span key={tag} className="text-[9px] font-mono text-[var(--text-secondary)] border border-[var(--border)] px-2 py-1 uppercase">{tag}</span>
-                                    ))}
-                                </div>
-                                <ArrowUpRight
-                                    size={18}
-                                    className="text-[var(--border)] group-hover:text-[var(--accent)] transition-colors duration-300 shrink-0 self-end sm:self-auto"
-                                />
-                            </div>
-                        </motion.a>
-                    ))}
-                </div>
+            {/* Other Projects using HoverFeatureCards */}
+            <div className="relative z-10 mt-20 border-t border-[var(--border)] pt-16">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--accent)] mb-10">More Explorations</p>
+                <HoverFeatureCards
+                    items={[
+                        ...others.map((project) => ({
+                            name: project.name,
+                            description: project.description,
+                            href: project.liveUrl || project.githubUrl,
+                            img: project.image,
+                            imgWidth: 140,
+                            fadeBottom: true,
+                        })),
+                        {
+                            name: "AeroShare App",
+                            description: "A secure WebRTC Peer-to-Peer file transfer application featuring local-first signalling and canvas styling.",
+                            soon: true,
+                        }
+                    ]}
+                />
             </div>
-
-            {/* ─── AWWWARDS PORTFOLIO: FLOATING IMAGE PREVIEW FOLLOWER ─── */}
-            <AnimatePresence>
-                {hoveredImg && (
-                    <motion.div
-                        className="fixed pointer-events-none z-[9999] hidden lg:block overflow-hidden rounded-xl border border-[var(--accent)]/40 bg-[#12100e]"
-                        style={{
-                            left: x,
-                            top: y,
-                            width: 280,
-                            height: 170,
-                            x: 25, // Offset to right of cursor
-                            y: -85, // Centered vertically relative to cursor
-                            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(191,155,74,0.15)",
-                            transformStyle: "preserve-3d"
-                        }}
-                        initial={{ opacity: 0, scale: 0.8, rotate: -4 }}
-                        animate={{ opacity: 1, scale: 1, rotate: 2 }}
-                        exit={{ opacity: 0, scale: 0.8, rotate: -4 }}
-                        transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-                    >
-                        <motion.img
-                            src={hoveredImg}
-                            alt="Project Preview"
-                            className="w-full h-full object-cover"
-                            initial={{ scale: 1.12 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 0.4 }}
-                        />
-                        {/* High-tech hud overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                        <div className="absolute bottom-2.5 right-3 font-mono text-[7px] tracking-widest text-[var(--accent)] uppercase opacity-80">
-                            [ sys.live_preview ]
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </section>
     );
 }
