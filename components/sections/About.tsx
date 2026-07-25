@@ -17,7 +17,7 @@ const fadeUp = {
 
 export default function About() {
     return (
-        <section id="about" className="relative">
+        <section id="about" className="relative overflow-hidden">
             <span className="section-num select-none" aria-hidden>01</span>
 
             <div className="section-label">
@@ -74,7 +74,7 @@ export default function About() {
                 </div>
 
                 <motion.div
-                    className="flex justify-center items-center relative overflow-visible"
+                    className="hidden lg:flex justify-center items-center relative overflow-hidden"
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true, margin: "-80px" }}

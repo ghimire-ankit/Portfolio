@@ -29,9 +29,9 @@ export default function Home() {
         }
     }, [loaded]);
 
-    // Disable right click (context menu) globally (matching abbasraza.dev behavior)
+    // Disable right click (context menu) globally
     useEffect(() => {
-        const handleContextMenu = (e: any) => {
+        const handleContextMenu = (e: MouseEvent) => {
             e.preventDefault();
         };
         document.addEventListener("contextmenu", handleContextMenu);
@@ -68,7 +68,7 @@ export default function Home() {
                             <Hero />
 
                             {/* Content sections */}
-                            <div className="max-w-6xl mx-auto px-8 lg:px-16">
+                            <div className="max-w-6xl mx-auto px-4 sm:px-8 lg:px-16">
                                 <About />
                                 <Experience />
                                 <Projects />

@@ -100,7 +100,7 @@ export default function Hero() {
 
                 {/* Main name — BOLD AND STRAIGHT SANS-SERIF */}
                 <div
-                    className="mb-6 relative w-max"
+                    className="mb-6 relative overflow-hidden"
                     onMouseEnter={() => setNameHovering(true)}
                     onMouseLeave={() => setNameHovering(false)}
                 >

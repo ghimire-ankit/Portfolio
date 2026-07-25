@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -24,23 +24,41 @@ const jetbrainsMono = JetBrains_Mono({
     display: "swap",
 });
 
+export const viewport: Viewport = {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+    themeColor: "#040209",
+};
+
 export const metadata: Metadata = {
     title: "Ankit Ghimire — Developer & Tech Explorer",
     description:
         "Personal portfolio of Ankit Ghimire — BCA student, aspiring tech associate, and builder of purposeful digital experiences.",
-    keywords: ["Ankit Ghimire", "developer", "portfolio", "Next.js", "React", "Nepal"],
-    authors: [{ name: "Ankit Ghimire" }],
+    keywords: ["Ankit Ghimire", "developer", "portfolio", "Next.js", "React", "Nepal", "BCA", "web developer"],
+    authors: [{ name: "Ankit Ghimire", url: "https://ankit.is-a.dev" }],
+    metadataBase: new URL("https://ankit.is-a.dev"),
+    alternates: {
+        canonical: "/",
+    },
+    robots: {
+        index: true,
+        follow: true,
+    },
     openGraph: {
         title: "Ankit Ghimire — Developer & Tech Explorer",
         description:
             "Personal portfolio of Ankit Ghimire — BCA student, aspiring tech associate, and builder of purposeful digital experiences.",
         type: "website",
         url: "https://ankit.is-a.dev",
+        siteName: "Ankit Ghimire Portfolio",
+        locale: "en_US",
     },
     twitter: {
         card: "summary_large_image",
         title: "Ankit Ghimire — Developer & Tech Explorer",
-        description: "Personal portfolio of Ankit Ghimire",
+        description: "Portfolio of Ankit Ghimire — developer, tech explorer, and builder.",
+        creator: "@ghimire_ankit",
     },
 };
 
