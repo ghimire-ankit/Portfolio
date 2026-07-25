@@ -83,11 +83,17 @@ export default function About() {
                     <RingGallery
                         images={[
                             { image: { src: "/images/ankit.webp" }, focusY: 15 },
-                            { image: { src: "/images/ankit2webp.webp" }, focusY: 25 },
-                            { image: { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/859c75ea-953e-489e-be61-91a03a35d700/w=800" }, focusY: 40 },
-                            { image: { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/7d4d2641-d6a8-4fef-e85c-b12ed100d500/w=800" }, focusY: 0 },
-                            { image: { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/f8b3688c-11d0-425c-0b6f-66f133322c00/w=800" }, focusY: 50 }
+                            { image: { src: "/images/ankit2webp.webp" }, focusY: 25 }
                         ]}
+                        ring={{
+                            radiusX: 110,
+                            radiusY: 110,
+                            tilt: true,
+                            repeat: 3
+                        }}
+                        cardWidth={95}
+                        cardHeight={95}
+                        rounded={8}
                     />
                 </motion.div>
             </div>
