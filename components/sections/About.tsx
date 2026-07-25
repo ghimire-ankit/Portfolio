@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { personal } from "@/lib/data";
 import Terminal from "@/components/ui/Terminal";
-import PixelPhotoFrame from "@/components/ui/PixelPhotoFrame";
+import RingGallery from "@/components/ui/RingGallery";
 import TextScramble from "@/components/ui/TextScramble";
 
 
@@ -26,7 +26,7 @@ export default function About() {
                 </span>
             </div>
 
-            <div className="grid lg:grid-cols-[1fr,auto] gap-16 items-start relative z-10 mb-16">
+            <div className="grid lg:grid-cols-[1fr,auto] gap-16 items-center relative z-10 mb-16">
                 <div>
                     <motion.h2
                         className="text-heading text-[var(--text-primary)] mb-8 font-cormorant leading-tight"
@@ -74,18 +74,20 @@ export default function About() {
                 </div>
 
                 <motion.div
-                    className="flex justify-center lg:block relative"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    className="flex justify-center items-center relative overflow-visible"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true, margin: "-80px" }}
                     transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                 >
-                    <PixelPhotoFrame
-                        src1="/images/ankit.webp"
-                        src2="/images/ankit2webp.webp"
-                        width={270}
-                        height={340}
-                        alt="Ankit Ghimire"
+                    <RingGallery
+                        images={[
+                            { image: { src: "/images/ankit.webp" }, focusY: 15 },
+                            { image: { src: "/images/ankit2webp.webp" }, focusY: 25 },
+                            { image: { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/859c75ea-953e-489e-be61-91a03a35d700/w=800" }, focusY: 40 },
+                            { image: { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/7d4d2641-d6a8-4fef-e85c-b12ed100d500/w=800" }, focusY: 0 },
+                            { image: { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/f8b3688c-11d0-425c-0b6f-66f133322c00/w=800" }, focusY: 50 }
+                        ]}
                     />
                 </motion.div>
             </div>
