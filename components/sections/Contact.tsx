@@ -2,15 +2,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { socials, personal } from "@/lib/data";
-import { Github, Linkedin, Mail, ArrowUpRight } from "lucide-react";
+import { Github, Linkedin, Mail } from "lucide-react";
 import TextScramble from "@/components/ui/TextScramble";
-
-const getSocialIcon = (name: string) => {
-    if (name === "GitHub") return <Github size={16} />;
-    if (name === "LinkedIn") return <Linkedin size={16} />;
-    if (name === "Email") return <Mail size={16} />;
-    return null;
-};
+import StaggeredGrid from "@/components/ui/StaggeredGrid";
 
 export default function Contact() {
     const [emailStatus, setEmailStatus] = useState("Say Hello");
@@ -23,8 +17,44 @@ export default function Contact() {
         }, 2200);
     };
 
+    const bentoItems = [
+        {
+            id: "github",
+            title: "GitHub Portfolio",
+            subtitle: "Repository Hub",
+            description: "Explore 4+ projects, active scripts, and open-source contributions.",
+            icon: <Github size={20} />,
+            url: "https://github.com/ghimire-ankit",
+            image: "https://images.unsplash.com/photo-1618401471353-b98aedd07871?q=80&w=600&auto=format&fit=crop"
+        },
+        {
+            id: "linkedin",
+            title: "LinkedIn Profile",
+            subtitle: "Professional Network",
+            description: "Connect for professional collaborations, BCA updates, and opportunities.",
+            icon: <Linkedin size={20} />,
+            url: "https://www.linkedin.com/in/ankit-ghimire-b83a72280/",
+            image: "https://images.unsplash.com/photo-1557200134-90327ee9fafa?q=80&w=600&auto=format&fit=crop"
+        },
+        {
+            id: "mail",
+            title: "Direct Email Contacts",
+            subtitle: "Communication channel",
+            description: "Shoot me a prompt to discuss projects, feedback, or say hello.",
+            icon: <Mail size={20} />,
+            url: "mailto:ankitghimire2004@gmail.com",
+            image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=600&auto=format&fit=crop"
+        }
+    ];
+
+    const decoratorImages = [
+        "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?q=80&w=400&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=400&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=400&auto=format&fit=crop"
+    ];
+
     return (
-        <section id="contact" className="text-center">
+        <section id="contact" className="text-center pb-24">
             <motion.span
                 className="text-label block mb-6"
                 initial={{ opacity: 0 }}
@@ -58,7 +88,7 @@ export default function Contact() {
             </motion.p>
 
             <motion.div
-                className="flex flex-wrap justify-center gap-4 mb-16"
+                className="flex flex-wrap justify-center gap-4 mb-20"
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -76,29 +106,19 @@ export default function Contact() {
                 </a>
             </motion.div>
 
-            {/* Social links row */}
+            {/* Interactive Staggered Grid Connect Section */}
             <motion.div
-                className="flex justify-center gap-8 border-t border-[var(--border)] pt-10"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.3 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+                className="w-full mt-10 border-t border-[var(--border)] pt-16 text-left"
             >
-                {socials.map((s) => (
-                    <a
-                        key={s.name}
-                        href={s.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors duration-200 group"
-                    >
-                        {getSocialIcon(s.name)}
-                        <span className="font-mono text-xs uppercase tracking-wider group-hover:underline">
-                            {s.name}
-                        </span>
-                        <ArrowUpRight size={11} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </a>
-                ))}
+                <StaggeredGrid
+                    images={decoratorImages}
+                    bentoItems={bentoItems}
+                    centerText="CONNECT"
+                />
             </motion.div>
         </section>
     );
