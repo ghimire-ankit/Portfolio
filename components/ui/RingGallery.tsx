@@ -373,6 +373,12 @@ export default function RingGallery({
                             }}
                             className="group"
                         >
+                            {/* Glowing Neon aura backdrop path */}
+                            <div
+                                className="absolute -inset-1.5 bg-gradient-to-r from-[var(--accent)] via-purple-600 to-pink-500 blur-md opacity-25 group-hover:opacity-85 transition-all duration-500 animate-pulse pointer-events-none"
+                                style={{ borderRadius: `calc(${cardRadius} + 6px)` }}
+                            />
+
                             <div
                                 style={{
                                     width: "100%",
@@ -380,8 +386,9 @@ export default function RingGallery({
                                     borderRadius: cardRadius,
                                     overflow: "hidden",
                                     cursor: "pointer",
+                                    position: "relative",
                                 }}
-                                className="border border-[var(--border)] group-hover:border-[var(--accent)]/70 transition-colors duration-300 shadow-lg group-hover:shadow-[0_0_20px_rgba(189,134,247,0.3)]"
+                                className="border border-purple-500/20 group-hover:border-[var(--accent)] transition-all duration-500 shadow-md"
                             >
                                 {src ? (
                                     <img
@@ -398,7 +405,7 @@ export default function RingGallery({
                                             display: "block",
                                             pointerEvents: "none",
                                         }}
-                                        className="transition-transform duration-500 group-hover:scale-110 filter grayscale group-hover:grayscale-0"
+                                        className="transition-all duration-500 group-hover:scale-105 filter saturate-[0.85] contrast-[1.04] group-hover:saturate-[1.1]"
                                     />
                                 ) : null}
                             </div>

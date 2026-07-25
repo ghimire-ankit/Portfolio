@@ -83,13 +83,14 @@ export default function About() {
                     <RingGallery
                         images={[
                             { image: { src: "/images/ankit.webp" }, focusY: 15 },
-                            { image: { src: "/images/ankit2webp.webp" }, focusY: 25 }
+                            { image: { src: "/images/ankit2webp.webp" }, focusY: 25 },
+                            { image: { src: "/images/ankit3.webp" }, focusY: 15 }
                         ]}
                         ring={{
                             radiusX: 110,
                             radiusY: 110,
                             tilt: true,
-                            repeat: 3
+                            repeat: 2
                         }}
                         cardWidth={95}
                         cardHeight={95}
